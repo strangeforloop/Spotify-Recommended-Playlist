@@ -3,7 +3,6 @@ const { spotifyApi, ensureAccessToken } = require("./spotifyClient");
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
 
-// Simple description → Last.fm tags
 const descriptionTagMap = {
   upbeat: ["funk", "dance", "pop"],
   kitchen: ["soul", "rnb"],
@@ -13,7 +12,7 @@ const descriptionTagMap = {
   focus: ["lo-fi", "classical"]
 };
 
-async function getLastFmSimilarTracks(artist, track, limit = 5) {
+const getLastFmSimilarTracks = async (artist, track, limit = 5) => {
   const url = `http://ws.audioscrobbler.com/2.0/?method=track.getsimilar&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&api_key=${LASTFM_API_KEY}&format=json&limit=${limit}`;
   const res = await fetch(url);
   const data = await res.json();
@@ -23,7 +22,7 @@ async function getLastFmSimilarTracks(artist, track, limit = 5) {
   }));
 }
 
-async function getLastFmTopTracksByTag(tag, limit = 5) {
+const getLastFmTopTracksByTag = async (tag, limit = 5) => {
   const url = `http://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${encodeURIComponent(tag)}&api_key=${LASTFM_API_KEY}&format=json&limit=${limit}`;
   const res = await fetch(url);
   const data = await res.json();
@@ -34,7 +33,7 @@ async function getLastFmTopTracksByTag(tag, limit = 5) {
 }
 
 // Look up a Last.fm track on Spotify → return Spotify track ID
-async function findSpotifyTrackId(name, artist) {
+const findSpotifyTrackId = async (name, artist) => {
   await ensureAccessToken();
   const query = `track:${name} artist:${artist}`;
   const results = await spotifyApi.searchTracks(query, { limit: 1 });
@@ -42,7 +41,7 @@ async function findSpotifyTrackId(name, artist) {
   return item ? { id: item.id, name: item.name, artist: artist, url: item.external_urls.spotify } : null;
 }
 
-async function buildPlaylistFromDescription(description, seedArtist, seedTrack) {
+const buildPlaylistFromDescription = async (description, seedArtist, seedTrack) => {
   const lowered = description.toLowerCase();
   let tags = [];
   for (const [keyword, tagList] of Object.entries(descriptionTagMap)) {
@@ -50,7 +49,7 @@ async function buildPlaylistFromDescription(description, seedArtist, seedTrack) 
       tags = [...new Set([...tags, ...tagList])];
     }
   } 
-  
+
   if (tags.length === 0) tags = ["pop"];
 
   // 1. Similar tracks to the seed
