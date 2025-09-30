@@ -52,17 +52,17 @@ const buildPlaylistFromDescription = async (description, seedArtist, seedTrack) 
 
   if (tags.length === 0) tags = ["pop"];
 
-  // 1. Similar tracks to the seed
+  // similar tracks to the seed
   const similar = await getLastFmSimilarTracks(seedArtist, seedTrack, 5);
 
-  // 2. Top tracks for description tags
+  // top tracks for description tags
   let tagTracks = [];
   for (const tag of tags) {
     const more = await getLastFmTopTracksByTag(tag, 5);
     tagTracks = [...tagTracks, ...more];
   }
 
-  // 3. Deduplicate by name+artist
+  // get unique
   const merged = [...similar, ...tagTracks];
   const seen = new Set();
   const unique = merged.filter(t => {
@@ -72,7 +72,6 @@ const buildPlaylistFromDescription = async (description, seedArtist, seedTrack) 
     return true;
   });
 
-  // 4. Resolve to Spotify IDs
   const spotifyResults = [];
   for (const t of unique) {
     const match = await findSpotifyTrackId(t.name, t.artist);
